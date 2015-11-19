@@ -1,0 +1,81 @@
+/** Our internal representation of a BinExpr
+ * in the Q0 language.
+ * See http://www.radford.edu/itec380/2009fall-ibarland/Hw06/hw06.html
+ * 
+ * @author Ian Barland
+ * @version 2014.Nov.04
+ */
+public class BinExpr extends Expr {
+
+  Expr left, right;
+  String op;
+
+  BinExpr( Expr _left, String _op, Expr _right ) {
+    this.left  = _left;
+    this.op    = _op;
+    this.right = _right;
+    }
+  
+  public String toString( /* BinExpr this */) {
+    return "("
+         + this.left.toString()
+         + " "
+         + op
+         +" "
+         + this.right.toString()
+         + ")";
+      }
+    
+  public Value eval( /* BinExpr this */) {
+    double leftValue  = ((Num)(this.left .eval())).doubleValue();
+    double rightValue = ((Num)(this.right.eval())).doubleValue();
+    if (this.op.equals("mul")) {
+      return new Num(leftValue * rightValue);
+      }
+   else if (this.op.equals("add")) {
+      return new Num(leftValue + rightValue);
+      }
+   else if (this.op.equals("sub")) {
+      return new Num(leftValue - rightValue);
+      }
+   else {
+      throw new RuntimeException("BinExpr.eval(): unknown binary operator `" + this.op + "`");
+      }
+    }
+  
+  @Override
+  public boolean equals( /* BinExpr this, */ Object that) {
+    if (this==that) {
+      return true;
+      }
+   else if (that==null) {
+      return false;
+      }
+   else if (this.getClass() != that.getClass()) {
+      return false;
+      }
+   else {
+      BinExpr thatt = (BinExpr) that;
+      return this.left.equals(thatt.left)
+          && this.op.equals(thatt.op)
+          && this.right.equals(thatt.right);
+      }
+    
+    }
+    
+  @Override
+  public int hashCode() {
+    if (cachedHash == null) {
+      int hashSoFar = 0x814F8614; // fingerprint
+      hashSoFar += this.left.hashCode();
+      hashSoFar *= 31;
+      hashSoFar += this.op.hashCode();
+      hashSoFar *= 31;
+      hashSoFar += this.right.hashCode();
+      cachedHash = hashSoFar;
+      }
+    return cachedHash;
+    }
+  private Integer cachedHash = null;
+
+  }

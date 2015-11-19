@@ -1,0 +1,1 @@
+("6.2.1" ("c0878927edf03d5c3ab73ff9b3dd5a451f880862" . "c38c9e4a485179200124311cf0feb62fbb7a1255") (collects #"racket" #"runtime-config.rkt") (collects #"mzlib" #"pregexp.rkt") (collects #"racket" #"main.rkt") (collects #"srfi" #"13.rkt") (collects #"srfi" #"14.rkt"))

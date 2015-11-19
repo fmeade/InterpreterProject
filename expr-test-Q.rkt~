@@ -1,0 +1,133 @@
+#lang racket
+
+(require "Q0.rkt")
+(require "scanner.rkt")
+(require rackunit) ; use `check-equal?`, not `check-expect`.
+;
+; We use `check-equal?` because it can be passed as a function (e.g. to `map`).
+; The one advantage of `check-expect` we lose, is that all check-expects are
+; delayed until the end of the file (hence, you can have a `check-expect`
+; *before* the function it tests -- not so, with `check-equal?`.)
+
+
+;;;;;;;;;;;;;;;;;;; TEST CASES: Q0 ;;;;;;;;;;;;;;;;
+
+
+; Some expressions to test in a non-automated way:
+(define e0 "43")
+(define e1 "[[43]]")
+(define e2 "(4 add 3)")
+(define e3 "[[[[ [[ (4 add 3)]]]]]]")
+(define e4 "([[43]] add    ( 42 mul 3))")
+
+(check-equal? (string->expr "39") 39)
+(check-equal? (eval (string->expr e4)) 169)
+
+;;; three types of test we want to make, for many different exprs:
+(check-equal? (string->expr "(4 add 3)") (make-bin-expr 4 "add" 3))
+(check-equal? (eval (string->expr "(4 add 3)")) 7)
+(check-equal? (expr->string (string->expr "(4 add 3)"))
+              "(4 add 3)")
+
+
+
+;; If you wanted to test/verify that exceptions really do get thrown
+;; for particular inputs, you can use `check-exn`.
+;; (This requires advanced-student, since the exception-throwing-code
+;;  needs to be wrapped in a "thunk" -- a lambda of 0 arguments.)
+;;
+(check-exn #rx"parse!: Unrecognized expr"
+           (λ() (string->expr "[[]]")))
+;;
+;; You don't need to do this -- I'm just including it to show
+;; what things a unit-testing library can/should check for.
+;;
+;; Btw, I should call `(regexp (regexp-quote ...the-err-message...))`
+;;   or at least quote the "." in my #rx above.
+;; Althougy regexp-quote isn't in the student languages,
+;; you can `(require "student-extras.rkt")` to get it.
+
+
+(define tests
+  ; Each entry in the list is either
+  ; [str val] (where val is the result of interpreting the string str), or
+  ; [str val expr] (as above, but expr is the internal (struct) representation).
+  `{["7" 7 7]
+    ["(3 add 4)" 7 ,(make-bin-expr 3 "add" 4)]
+    ["(3 mul   4)" 12 ,(make-bin-expr 3 "mul" 4)]
+    ["((3 add 4) add(  3  mul 4 ) )" 19]
+    ["parity 0 even: 1 odd: 2;" 1 ,(make-parity-expr 0 1 2)]
+    ["parity 1 even: 1 odd: 2;" 2 ,(make-parity-expr 1 1 2)]
+    ["parity (3 add -3) even: 1 odd: 2;" 1 ,(make-parity-expr (make-bin-expr 3 "add" -3) 1 2)]
+    ["parity (parity parity 0 even: 1 odd: 2; even: 3 odd: 4 ; add -3) even:  1 odd: 2;" 
+     2
+     ,(make-parity-expr (make-bin-expr (make-parity-expr (make-parity-expr 0 1 2) 3 4) "add" -3) 1 2)]
+    
+    #| Further tests, for Q1:
+    ["(3.0 mod 4.0)" 3]
+    ["(( 5.0 add 6.0 ) mod 3.0)" 2]
+    ["(8.1 mod 3.0)" 2.1]
+    ["(8.0 mod 3.1)" 1.8]
+    ["(-8.1 mod 3.0)" 0.9]
+    ["(-8.0 mod 3.1)" 1.3]
+    ["(8.1 mod -3)" -0.9]
+    ["(8.0 mod -3.1)" -1.3]
+    ["(-8.1 mod -3.0)" -2.1]
+    ["(-8.0 mod -3.1)" -1.8]
+    ["(8.0  mod  2.0)" 0]
+    ["(-8.0  mod 2.0)" 0]
+    ["(8.0 mod  -2.0)" 0]
+    ["(-8.0 mod -2.0)" 0]
+    ["(8.0  mod  3.0)" 2]
+    ["(-8.0  mod 3.0)" 1]
+    ["(8.0 mod  -3.0)" -1]
+    ["(-8.0 mod -3.0)" -2]
+    |#
+    })
+
+; For info on backquote, see documentations and/or:
+;   http://www.radford.edu/itec380/2014fall-ibarland/Lectures/backquote.html
+
+
+
+; Given a string, return a list of tokens (of Q).
+;
+(define (string->Q-tokens str)
+  ; Don't use scheme's built-in `read`, because our string might contain semicolons etc.
+  (let loop {[scnr (create-scanner str)]} ; See "named let" -- advanced-student.
+    (if (eof-object? (peek scnr))
+        empty
+        (cons (pop! scnr) (loop scnr)))))
+        ; N.B. We RELY on left-to-right eval here:
+        ; the pop happens before looping back.
+
+
+
+; Test the internal representations:
+(for-each (λ (t) (check-equal? (string->expr (first t))
+                               (third t)))
+          (filter (λ(t) (>= (length t) 3)) tests))
+
+
+
+; Test that expr->string and string->expr are inverses:
+(for-each (λ (t) (check-equal? (string->Q-tokens (expr->string (string->expr (first t))))
+                               (string->Q-tokens (first t))))
+          tests)
+
+
+; Now, test `eval`:
+(for-each (λ (t) (check-equal? (eval (string->expr (first t)))
+                               (second t)))
+          tests)
+
+
+
+
+
+
+
+
+
+
+
