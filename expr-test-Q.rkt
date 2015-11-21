@@ -1,6 +1,6 @@
 #lang racket
 
-(require "Q0.rkt")
+(require "Q.rkt")
 (require "scanner.rkt")
 (require rackunit) ; use `check-equal?`, not `check-expect`.
 ;
@@ -29,21 +29,6 @@
               "(4 add 3)")
 
 
-;; If you wanted to test/verify that exceptions really do get thrown
-;; for particular inputs, you can use `check-exn`.
-;; (This requires advanced-student, since the exception-throwing-code
-;;  needs to be wrapped in a "thunk" -- a lambda of 0 arguments.)
-;;
-(check-exn #rx"parse!: Unrecognized expr"
-           (λ() (string->expr "[[]]")))
-;;
-;; You don't need to do this -- I'm just including it to show
-;; what things a unit-testing library can/should check for.
-;;
-;; Btw, I should call `(regexp (regexp-quote ...the-err-message...))`
-;;   or at least quote the "." in my #rx above.
-;; Althougy regexp-quote isn't in the student languages,
-;; you can `(require "student-extras.rkt")` to get it.
 
 
 (define tests
@@ -144,13 +129,13 @@ Q1:
 
 
 (define prog01 "( 8.1 mod [[3]])")
-(check-equal? (string->expr prog01) (make-bin-expr 8.1 "mod" 3))
-(check-equal? (expr->string (string->expr prog01)) "( 8.1 mod [[3]] )" )
+(check-equal? (string->expr prog01) (make-bin-expr 8.1 "mod" (make-paren-expr 3)))
+(check-equal? (expr->string (string->expr prog01)) "(8.1 mod [[3]])" )
 (check-equal? (eval (string->expr prog01))  2.1 )
 
 (define prog02 "if ( 5 sub 5 ) is zero then 0 else -1 @")
 (check-equal? (string->expr prog02) (make-ifzero-expr (make-bin-expr 5 "sub" 5) 0 -1))
-(check-equal? (expr->string (string->expr prog02)) "if ( 5 sub 5 ) is zero then 0 else -1 @" )
+(check-equal? (expr->string (string->expr prog02)) "if (5 sub 5) is zero then 0 else -1 @" )
 (check-equal? (eval (string->expr prog02))  0 )
 
 #|
@@ -174,6 +159,8 @@ Java Test Cases for Q1
 
 
 
+
+
 #|
 Q2:
  Expr       ::= Num | ParenExpr | BinExpr | ParityExpr | IfZeroExpr | Id | LetExpr
@@ -189,17 +176,17 @@ Q2:
 
 
 
-(define prog11 "say x be 5 in (4 mul x) matey") 
-(check-equal? (string->expr prog11) (make-let-expr 5 (make-bin-expr 4 "mul" 5)))
+(define prog11 "say x be 5 in ( 4 mul x ) matey") 
+(check-equal? (string->expr prog11) (make-let-expr "x" 5 (make-bin-expr 4 "mul" "x")))
 (check-equal? (expr->string (string->expr prog11)) "say x be 5 in (4 mul x) matey" )
 (check-equal? (eval (string->expr prog11))  20 )
 
 ; Make an additional example, where the `say` is *not* the top-level expression:
 ; Then, have the three tests for it, as above.
 ;
-(define prog12 "( 5 add say x be 5 in (4 mul x) matey )")
-(check-equal? (string->expr prog12) (make-bin-expr 5 "add" (make-let-expr 5 (make-bin-expr 4 "mul" 5))))
-(check-equal? (expr->string (string->expr prog12)) "( 5 add say x be 5 in (4 mul x) matey )" )
+(define prog12 "( 5 add say x be 5 in ( 4 mul x ) matey )")
+(check-equal? (string->expr prog12) (make-bin-expr 5 "add" (make-let-expr "x" 5 (make-bin-expr 4 "mul" "x"))))
+(check-equal? (expr->string (string->expr prog12)) "(5 add say x be 5 in (4 mul x) matey)" )
 (check-equal? (eval (string->expr prog12))  25 )
 
 
@@ -212,15 +199,15 @@ Q2:
 (check-equal? (substitute "x" 9 (string->expr "3"))   (string->expr "3") )
 (check-equal? (substitute "x" 9 (string->expr "x"))   (string->expr "9") )
 (check-equal? (substitute "z" 7 (string->expr "x"))   (string->expr "x") )
-(check-equal? (substitute "z" 7 (string->expr "(4 add z)"))   (string->expr (make-bin-expr 4 "add" 7)) )
-(check-equal? (substitute "z" 7 (string->expr "say x be z in (x mul z) matey"))   (string->expr (make-let-expr 7 (make-bin-expr 7 "mul" 7))) )
+(check-equal? (substitute "z" 7 (string->expr "(4 add z)"))  (string->expr (expr->string (make-bin-expr 4 "add" 7))) )
+(check-equal? (substitute "z" 7 (string->expr "say x be z in (x mul z) matey"))   (string->expr (expr->string (make-let-expr "x" 7 (make-bin-expr "x" "mul" 7)))) )
 ; Give at least one more interesting tree, to test `substitute` on,
 ; with parse-tree of height of 2 or more.
 ; You do *not* need to do `substitute` on a parse tree containing a `say` inside of it ... yet.
 ; (But you are encouraged to start thinking about what you want to happen, in that situation.)
 ;
 (check-equal? (substitute "y" 5 (string->expr "( ( y add 5 ) sub ( [[10]] sub y ) )"))
-              (string->expr (make-bin-expr (make-bin-expr 5 "add" 5) "sub" (make-bin-expr (make-paren-expr 10) "sub" 5))))
+              (string->expr (expr->string (make-bin-expr (make-bin-expr 5 "add" 5) "sub" (make-bin-expr (make-paren-expr 10) "sub" 5)))) )
 
 
 
