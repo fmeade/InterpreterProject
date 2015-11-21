@@ -150,7 +150,7 @@ Q2:
 ; Return a human-readable version of our internal representaiton of Exprs.
 ; 
 (define (expr->string e)
-  (cond [(number? e) (format "~v" e)]
+  (cond [(number? e) (format "~v" (if (inexact? e) (exact->inexact e) e))]
         [(paren-expr? e) (string-append
                           "[["
                           (expr->string (paren-expr-e e))

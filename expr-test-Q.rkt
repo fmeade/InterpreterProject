@@ -129,9 +129,9 @@ Q1:
 
 
 (define prog01 "( 8.1 mod [[3]])")
-(check-equal? (string->expr prog01) (make-bin-expr 8.1 "mod" (make-paren-expr 3)))
-(check-equal? (expr->string (string->expr prog01)) "(8.1 mod [[3]])" )
-(check-equal? (eval (string->expr prog01))  2.1 )
+(check-equal? (string->expr prog01) (make-bin-expr 81/10 "mod" (make-paren-expr 3)))
+(check-equal? (expr->string (string->expr prog01)) "(81/10 mod [[3]])" )
+(check-equal? (eval (string->expr prog01))  21/10 )
 
 (define prog02 "if ( 5 sub 5 ) is zero then 0 else -1 @")
 (check-equal? (string->expr prog02) (make-ifzero-expr (make-bin-expr 5 "sub" 5) 0 -1))
