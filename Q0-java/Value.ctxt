@@ -1,7 +1,0 @@
-#BlueJ class context
-comment0.params=
-comment0.target=Value\ eval()
-comment1.params=
-comment1.target=int\ hashCode()
-comment1.text=@override.\ \ @see\ Expr\#hashCode
-numComments=2
