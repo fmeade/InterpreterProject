@@ -48,7 +48,7 @@ public abstract class Expr {
     if (UtilIan.hasNextDoubleSplittingBy(s,PUNCTUATION)) {
       return new Num( UtilIan.nextDoubleSplittingBy(s,PUNCTUATION) );
       }
-   else if (UtilIan.hasNextSplittingBy(s, ParityExpr.TOKEN, PUNCTUATION)) {
+    else if (UtilIan.hasNextSplittingBy(s, ParityExpr.TOKEN, PUNCTUATION)) {
       UtilIan.nextSplittingBy(s, PUNCTUATION);  // consume the "parity"
       Expr subExpr1 = parse(s);
       UtilIan.nextSplittingBy(s, PUNCTUATION);  // Consume the `even:`
@@ -59,13 +59,26 @@ public abstract class Expr {
       UtilIan.nextChar(s,';');  // Consume the closing ;
       return new ParityExpr(subExpr1,subExpr2,subExpr3);
       }
-   else if (UtilIan.hasNextChar(s,'<') ) { // a ParenExpr
+    else if (UtilIan.hasNextSplittingBy(s, IfZeroExpr.TOKEN, PUNCTUATION)) {
+      UtilIan.nextSplittingBy(s, PUNCTUATION);  // consume the "if"      /if Expr is zero then Expr else Expr @
+      Expr subExpr1 = parse(s);
+      UtilIan.nextSplittingBy(s, PUNCTUATION);  // Consume the `is zero then`
+     // UtilIan.nextSplittingBy(s, PUNCTUATION);  // Consume the `zero`
+      //UtilIan.nextSplittingBy(s, PUNCTUATION);  // Consume the `then`
+      Expr subExpr2 = parse(s);
+      UtilIan.nextSplittingBy(s, PUNCTUATION);  // Consume the `else`
+      Expr subExpr3 = parse(s);
+      assert UtilIan.hasNextChar(s,'@') : "`@` must close " + IfZeroExpr.TOKEN;
+      UtilIan.nextChar(s,'@');  // Consume the closing ;
+      return new IfZeroExpr(subExpr1,subExpr2,subExpr3);
+      }
+    else if (UtilIan.hasNextChar(s,'<') ) { // a ParenExpr
       UtilIan.nextChar(s,'<');  // Consume the opening "<" and continue.
       Expr subExpr1 = parse(s);
       UtilIan.nextChar(s,'>');  // consume the '>'
       return new ParenExpr(subExpr1);
       }
-   else if (UtilIan.hasNextChar(s,'(') ) { // a BinExpr
+    else if (UtilIan.hasNextChar(s,'(') ) { // a BinExpr
       UtilIan.nextChar(s,'(');  // Consume the opening "<" and continue.
       UtilIan.nextChar(s,':');  // Consume the opening ":" and continue.
       Expr subExpr1 = parse(s);
@@ -77,7 +90,7 @@ public abstract class Expr {
       UtilIan.nextChar(s,')');  // consume the ')'
       return new BinExpr(subExpr1, operator, subExpr2);
       }
-   else { /* Unknown syntax! */
+    else { /* Unknown syntax! */
       String tokens = "";
       while (s.hasNext()) { tokens += s.next(); }
       throw new IllegalArgumentException( "Syntax error: Couldn't parse " + tokens );

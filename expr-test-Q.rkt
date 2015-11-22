@@ -104,10 +104,8 @@
 
 
 
-(require "Q.rkt")
-
 ;; Forrest Meade (fmeade)
-;; HW07 Test Cases
+;; HW07 Test Cases Q1 & Q2
 ;; ITEC 380
 ;; November 20, 2015
 
@@ -138,24 +136,10 @@ Q1:
 (check-equal? (expr->string (string->expr prog02)) "if (5 sub 5) is zero then 0 else -1 @" )
 (check-equal? (eval (string->expr prog02))  0 )
 
-#|
-Java Test Cases for Q1
- @Test
-  void testAFew() {
-    String prog01 = "(8.1 mod 3)";
-    assertEquals( Expr.parse(prog01), new BinExpr( 8.1, "mod", 3 ) );
-    assertEquals( Expr.parse(prog01).toString(), "( 8.1 mod 3 )" );
-    assertEquals( Expr.parse(prog01).eval(), 2.1 );
-
-    
-   String prog02 = "if ( 5 sub 5 ) is zero then 0 else -1 @";
-    assertEquals( Expr.parse(prog02), new ifZeroExpr( new BinExpr(5, "sub", 5), 0, -1 ) );
-    assertEquals( Expr.parse(prog02).toString(), "if ( 5 sub 5 ) is zero then 0 else -1 @" );
-    assertEquals( Expr.parse(prog02).eval(), 0 );
-  }
-|#
-
-
+(define prog03 "( [[9]] mod if ( 5 sub [[5]] ) is zero then 3 else 6 @ )")
+(check-equal? (string->expr prog03) (make-bin-expr (make-paren-expr 9) "mod" (make-ifzero-expr (make-bin-expr 5 "sub" (make-paren-expr 5)) 3 6)) )
+(check-equal? (expr->string (string->expr prog03)) "([[9]] mod if (5 sub [[5]]) is zero then 3 else 6 @)" )
+(check-equal? (eval (string->expr prog03)) 0 )
 
 
 
@@ -188,6 +172,18 @@ Q2:
 (check-equal? (string->expr prog12) (make-bin-expr 5 "add" (make-let-expr "x" 5 (make-bin-expr 4 "mul" "x"))))
 (check-equal? (expr->string (string->expr prog12)) "(5 add say x be 5 in (4 mul x) matey)" )
 (check-equal? (eval (string->expr prog12))  25 )
+
+(define prog13 "[[( 5 sub [[say x be 5 in ( 1 mul x ) matey]] )]]")
+(check-equal? (string->expr prog13) (make-paren-expr (make-bin-expr 5
+                                                                    "sub"
+                                                                    (make-paren-expr (make-let-expr "x"
+                                                                                                    5
+                                                                                                    (make-bin-expr 1
+                                                                                                                   "mul"
+                                                                                                                   "x"))))) )
+(check-equal? (expr->string (string->expr prog13)) "[[(5 sub [[say x be 5 in (1 mul x) matey]])]]" )
+(check-equal? (eval (string->expr prog13)) 0 )
+
 
 
 

@@ -3,21 +3,18 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class BinExprTest {
+public class IfZeroExprTest {
     
     @Test
     public void equalsTest() {
-      BinExpr e1 = new BinExpr(new Num(4), "add", new Num(5));
-      BinExpr e2 = new BinExpr(new Num(4), "add", new Num(5));
-      BinExpr e3 = new BinExpr(new Num(5), "add", new Num(4));
-      assertEquals( e1, e1 );
-      assertEquals( e1, e2 );
+      ParenExpr e1 = new ParenExpr( new Num(3) );
+      ParenExpr e2 = new ParenExpr( new Num(3) );
+      ParenExpr e3 = new ParenExpr( new Num(7) );
+      assertEquals(e1,e1);
+      assertEquals(e1,e2);
       assertFalse(  e1.equals(e3) );
       assertEquals( e1.hashCode(), e1.hashCode() );
       assertEquals( e1.hashCode(), e2.hashCode() );
       assertFalse(  e1.hashCode() == e3.hashCode() );
       }
-    
     }
-
-

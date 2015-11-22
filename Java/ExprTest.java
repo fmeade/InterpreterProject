@@ -135,6 +135,21 @@ public class ExprTest extends junit.framework.TestCase {
     protected void tearDown()
     {
     }
+
+
+    @Test
+  void testAFew() {
+    String prog01 = "(8.1 mod 3)";
+    assertEquals( Expr.parse(prog01), new BinExpr( 8.1, "mod", 3 ) );
+    assertEquals( Expr.parse(prog01).toString(), "( 8.1 mod 3 )" );
+    assertEquals( Expr.parse(prog01).eval(), 2.1 );
+
+    
+   String prog02 = "if ( 5 sub 5 ) is zero then 0 else -1 @";
+    assertEquals( Expr.parse(prog02), new ifZeroExpr( new BinExpr(5, "sub", 5), 0, -1 ) );
+    assertEquals( Expr.parse(prog02).toString(), "if ( 5 sub 5 ) is zero then 0 else -1 @" );
+    assertEquals( Expr.parse(prog02).eval(), 0 );
+  }
 }
 
 /*

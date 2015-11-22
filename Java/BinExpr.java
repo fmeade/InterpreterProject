@@ -38,6 +38,9 @@ public class BinExpr extends Expr {
    else if (this.op.equals("sub")) {
       return new Num(leftValue - rightValue);
       }
+    else if (this.op.equals("mod")) {
+      return new Num(rightValue * ((leftValue/rightValue) - (Math.floor(leftValue/rightValue)))); // y*(x/y-floor(x/y))
+      }
    else {
       throw new RuntimeException("BinExpr.eval(): unknown binary operator `" + this.op + "`");
       }
