@@ -5,6 +5,7 @@
  * See http://www.radford.edu/~itec380/2015fall-ibarland/Homeworks/hw07.html
  * 
  * @author Forrest Meade (fmeade)
+ * @author Ian Barland
  * @version 2015.Nov.30
  */
 public abstract class Expr {
@@ -96,7 +97,10 @@ public abstract class Expr {
 	    }
     }
 
-
+  	/** @override.  Used for fingerprinting only. */
+  	public int hashCode() {
+    	return super.hashCode()+(int)3141949305892159L;
+    }
 
 
 }
