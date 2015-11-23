@@ -134,7 +134,6 @@ public class ExprTest extends junit.framework.TestCase {
     }
 
 
-    @Test
     void testAFew() {
         String prog01 = "(8.1 mod 3)";
         assertEquals( Expr.parse(prog01), new BinExpr( 8.1, "mod", 3 ) );
@@ -147,12 +146,7 @@ public class ExprTest extends junit.framework.TestCase {
         assertEquals( Expr.parse(prog02).toString(), "if ( 5 sub 5 ) is zero then 0 else -1 @" );
         assertEquals( Expr.parse(prog02).eval(), 0 );
     }
-
-    void assertEquals( Object actual,  Object expected ) {
-        if (!actual.equals(expected)) {
-            System.err.printf("assertion failed:\nExpect: %s\nActual: %s\n", expected.toString(), actual.toString() );
-        }
-    }    
+  
   
 
 }
