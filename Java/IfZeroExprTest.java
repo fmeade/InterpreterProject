@@ -1,7 +1,5 @@
 import static org.junit.Assert.*;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 
 /**
  * The test class IfZeroExprTest.
@@ -25,3 +23,21 @@ public class IfZeroExprTest {
       }
     
     }
+
+// From Expr.java 
+else if (UtilIan.hasNextSplittingBy(s, IfZeroExpr.TOKEN, PUNCTUATION)) {
+    UtilIan.nextSplittingBy(s, PUNCTUATION);  // consume the "if"
+    Expr subExpr1 = parse(s);
+    UtilIan.nextSplittingBy(s, PUNCTUATION);  // Consume the `is zero then`
+    Expr subExpr2 = parse(s);
+    UtilIan.nextSplittingBy(s, PUNCTUATION);  // Consume the `else`
+    Expr subExpr3 = parse(s);
+    assert UtilIan.hasNextChar(s,'@') : "`@` must close " + IfZeroExpr.TOKEN;
+    UtilIan.nextChar(s,'@');  // Consume the closing ;
+    return new IfZeroExpr(subExpr1,subExpr2,subExpr3);
+}
+
+// From BinExpr.java
+else if (this.op.equals("mod")) {
+    return new Num(rightValue * ((leftValue/rightValue) - (Math.floor(leftValue/rightValue)))); // y*(x/y-floor(x/y))
+}

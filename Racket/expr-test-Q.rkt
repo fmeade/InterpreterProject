@@ -126,20 +126,20 @@ Q1:
 (require rackunit)
 
 
-(define prog01 "( 8.1 mod [[3]])")
-(check-equal? (string->expr prog01) (make-bin-expr 81/10 "mod" (make-paren-expr 3)))
-(check-equal? (expr->string (string->expr prog01)) "(81/10 mod [[3]])" )
-(check-equal? (eval (string->expr prog01))  21/10 )
+(define prog11 "( 8.1 mod [[3]])")
+(check-equal? (string->expr prog11) (make-bin-expr 81/10 "mod" (make-paren-expr 3)))
+(check-equal? (expr->string (string->expr prog11)) "(81/10 mod [[3]])" )
+(check-equal? (eval (string->expr prog11))  21/10 )
 
-(define prog02 "if ( 5 sub 5 ) is zero then 0 else -1 @")
-(check-equal? (string->expr prog02) (make-ifzero-expr (make-bin-expr 5 "sub" 5) 0 -1))
-(check-equal? (expr->string (string->expr prog02)) "if (5 sub 5) is zero then 0 else -1 @" )
-(check-equal? (eval (string->expr prog02))  0 )
+(define prog12 "if ( 5 sub 5 ) is zero then 0 else -1 @")
+(check-equal? (string->expr prog12) (make-ifzero-expr (make-bin-expr 5 "sub" 5) 0 -1))
+(check-equal? (expr->string (string->expr prog12)) "if (5 sub 5) is zero then 0 else -1 @" )
+(check-equal? (eval (string->expr prog12))  0 )
 
-(define prog03 "( [[9]] mod if ( 5 sub [[5]] ) is zero then 3 else 6 @ )")
-(check-equal? (string->expr prog03) (make-bin-expr (make-paren-expr 9) "mod" (make-ifzero-expr (make-bin-expr 5 "sub" (make-paren-expr 5)) 3 6)) )
-(check-equal? (expr->string (string->expr prog03)) "([[9]] mod if (5 sub [[5]]) is zero then 3 else 6 @)" )
-(check-equal? (eval (string->expr prog03)) 0 )
+(define prog13 "( [[9]] mod if ( 5 sub [[5]] ) is zero then 3 else 6 @ )")
+(check-equal? (string->expr prog13) (make-bin-expr (make-paren-expr 9) "mod" (make-ifzero-expr (make-bin-expr 5 "sub" (make-paren-expr 5)) 3 6)) )
+(check-equal? (expr->string (string->expr prog13)) "([[9]] mod if (5 sub [[5]]) is zero then 3 else 6 @)" )
+(check-equal? (eval (string->expr prog13)) 0 )
 
 
 
@@ -160,29 +160,29 @@ Q2:
 
 
 
-(define prog11 "say x be 5 in ( 4 mul x ) matey") 
-(check-equal? (string->expr prog11) (make-let-expr "x" 5 (make-bin-expr 4 "mul" "x")))
-(check-equal? (expr->string (string->expr prog11)) "say x be 5 in (4 mul x) matey" )
-(check-equal? (eval (string->expr prog11))  20 )
+(define prog21 "say x be 5 in ( 4 mul x ) matey") 
+(check-equal? (string->expr prog21) (make-let-expr "x" 5 (make-bin-expr 4 "mul" "x")))
+(check-equal? (expr->string (string->expr prog21)) "say x be 5 in (4 mul x) matey" )
+(check-equal? (eval (string->expr prog21))  20 )
 
 ; Make an additional example, where the `say` is *not* the top-level expression:
 ; Then, have the three tests for it, as above.
 ;
-(define prog12 "( 5 add say x be 5 in ( 4 mul x ) matey )")
-(check-equal? (string->expr prog12) (make-bin-expr 5 "add" (make-let-expr "x" 5 (make-bin-expr 4 "mul" "x"))))
-(check-equal? (expr->string (string->expr prog12)) "(5 add say x be 5 in (4 mul x) matey)" )
-(check-equal? (eval (string->expr prog12))  25 )
+(define prog22 "( 5 add say x be 5 in ( 4 mul x ) matey )")
+(check-equal? (string->expr prog22) (make-bin-expr 5 "add" (make-let-expr "x" 5 (make-bin-expr 4 "mul" "x"))))
+(check-equal? (expr->string (string->expr prog22)) "(5 add say x be 5 in (4 mul x) matey)" )
+(check-equal? (eval (string->expr prog22))  25 )
 
-(define prog13 "[[( 5 sub [[say x be 5 in ( 1 mul x ) matey]] )]]")
-(check-equal? (string->expr prog13) (make-paren-expr (make-bin-expr 5
+(define prog23 "[[( 5 sub [[say x be 5 in ( 1 mul x ) matey]] )]]")
+(check-equal? (string->expr prog23) (make-paren-expr (make-bin-expr 5
                                                                     "sub"
                                                                     (make-paren-expr (make-let-expr "x"
                                                                                                     5
                                                                                                     (make-bin-expr 1
                                                                                                                    "mul"
                                                                                                                    "x"))))) )
-(check-equal? (expr->string (string->expr prog13)) "[[(5 sub [[say x be 5 in (1 mul x) matey]])]]" )
-(check-equal? (eval (string->expr prog13)) 0 )
+(check-equal? (expr->string (string->expr prog23)) "[[(5 sub [[say x be 5 in (1 mul x) matey]])]]" )
+(check-equal? (eval (string->expr prog23)) 0 )
 
 
 
@@ -211,6 +211,63 @@ Q2:
 
 
 
+
+#|
+Q3:
+ Expr       ::= Num | ParenExpr | BinExpr | ParityExpr | IfZeroExpr | Id | LetExpr
+  ParenExpr  ::= [[ Expr ]]
+  BinExpr    ::= ( Expr BinOp Expr )
+  ParityExpr ::= parity Expr even: Expr odd: Expr ;
+  IfZeroExpr ::= if Expr is zero then Expr else Expr @
+  LetExpr ::= say Id be Expr in Expr matey
+  BinOp      ::= add | sub | mul | mod
+|#
+
+;;;;;;;;;;;;;;;;;;; TEST CASES: Q3 ;;;;;;;;;;;;;;;;
+
+#| Problem #4 from HW08
+a. say y be 3 in say x be 5 in (x add y) matey matey ⇒ say x be 5 in (x add 3) matey ⇒ (5 add 3) ⇒ 8
+b. say y be 3 in say x be y in (x add y) matey matey ⇒ say x be 3 in (x add 3) matey ⇒ (3 add 3) ⇒ 6
+c. say x be 5 in say y be 3 in (say x be y in (x add y) matey add x) matey matey ⇒ say y be 3 in (say x be y in (x add y) matey add 5) matey
+     ⇒ (say x be 3 in (x add 3) matey add 5) ⇒ ((3 add 3) add 5) ⇒ (6 add 5) ⇒ 11
+d. say x
+   be 5
+   in [[say x
+        be (x add 1)
+        in (x add 2) matey]] matey
+e. say y
+   be say z
+      be 4
+      in [[say y
+           be 99
+           in z matey]] matey
+   in [[say z
+        be 5
+        in ([[say z
+              be 10
+              in y matey]] add (y add z)) matey]] matey
+|#
+
+(define prog31 "say y be 3 in say x be 5 in (x add y) matey matey")
+(check-equal? (eval (string->expr prog31))  8 )
+(check-equal? (substitute "x" 5 (substitute "y" 3 (string->expr "(x add y)")))   (string->expr (expr->string (make-bin-expr 5 "add" 3))) )
+
+(define prog32 "say y be 3 in say x be y in (x add y) matey matey")
+(check-equal? (eval (string->expr prog32))  6 )
+(check-equal? (substitute "y" 3 (substitute "x" "y" (string->expr "(x add y)")))   (string->expr (expr->string (make-bin-expr 3 "add" 3))) )
+
+(define prog33 "say x be 5 in say y be 3 in (say x be y in (x add y) matey add x) matey matey")
+(check-equal? (eval (string->expr prog33))  11 )
+(check-equal? (substitute "x" 5 (string->expr (append "(" (expr->string (substitute "y" 3 (substitute "x" "y" (string->expr "(x add y)")))) " add x)")))   (string->expr (expr->string (make-bin-expr (make-bin-expr 3 "add" 3) "add" 5))) )
+
+(define prog34 "say x be 5 in [[say x be (x add 1) in (x add 2) matey]] matey")
+(check-equal? (eval (string->expr prog34))  8 )
+(check-equal? (substitute "x" 5 (substitute "x" (make-bin-expr "x" "add" 1) (string->expr "(x add 2)")))   (string->expr (expr->string (make-paren-expr (make-bin-expr (make-bin-expr 5 "add 1") "add" 2)))) )
+
+(define prog35 "say y be say z be 4 in [[say y be 99 in z matey]] matey in [[say z be 5 in ([[say z be 10 in y matey]] add (y add z)) matey]] matey")
+(check-equal? (eval (string->expr prog35))  9 )
+(check-equal? (substitute "y" (substitute "z" 4 (substitute "y" 99 (string->expr "z"))) (substitute "z" 5 (string->expr (append "(" (substitute "z" 10 (string->expr "y")) " add " "(y add z))"))))
+              (string->expr (expr->string (make-bin-expr "4" "add" (make-bin-expr "4" "add" 5)))) )
 
 
 

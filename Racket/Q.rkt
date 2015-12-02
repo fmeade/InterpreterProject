@@ -1,7 +1,8 @@
 #lang racket
 
 ; http://www.radford.edu/itec380/2015fall-ibarland/Homeworks/Project/
-; Ian Barland, 2008.Nov.27, updates through 2015.Nov.09
+; Forrest Meade (fmeade)
+; 2.Dec.2015
 
 ; We'll run this program in language-level 'Racket', *not* 'Advanced Student'.
 ; (This is because we are exporting our functions
@@ -52,8 +53,8 @@ Q2:
 (define-struct bin-expr (left op right) #:transparent)
 (define-struct paren-expr (e) #:transparent)
 (define-struct parity-expr (cond even odd) #:transparent)
-(define-struct ifzero-expr (cond zero other) #:transparent)
-(define-struct let-expr (id be in) #:transparent)
+(define-struct ifzero-expr (cond zero other) #:transparent) ;>>>Q1
+(define-struct let-expr (id be in) #:transparent) ;>>>Q2
 ;
 ; The keyword 'transparent' makes structs with 'public' fields;
 ; in particular check-expect can inspect these structs.
@@ -114,7 +115,7 @@ Q2:
            (when (not (bin-op? operator))
              (error 'parse! "Expected one of ~v, got ~v." BIN_OP_TOKENS operator))
            (make-bin-expr subexpr1 operator subexpr2))]
-        [(string=? (peek scnr) "if")
+        [(string=? (peek scnr) "if") ;>>>Q1
          (let* {[open-if (pop! scnr)]
                 [subexpr1 (parse! scnr)]
                 [the-is (pop! scnr)]
@@ -125,7 +126,7 @@ Q2:
                 [subexpr3 (parse! scnr)]
                 [the-at (pop! scnr)]
                 } (make-ifzero-expr subexpr1 subexpr2 subexpr3))]
-        [(string=? (peek scnr) "say")
+        [(string=? (peek scnr) "say")  ;>>>Q2
          (let* {[open-say (pop! scnr)]
                 [subid (parse! scnr)]
                 [the-be (pop! scnr)]
@@ -134,7 +135,7 @@ Q2:
                 [subexpr2 (parse! scnr)]
                 [the-matey (pop! scnr)]
                 } (make-let-expr subid subexpr1 subexpr2))]
-        [(char? (string-ref (peek scnr) 0)) (pop! scnr)]
+        [(char? (string-ref (peek scnr) 0)) (pop! scnr)] ;>>>Q2
         [else (error 'parse! "Unrecognized expr: ~v." (peek scnr))]))
 
 ; string->expr (-> string expr)
@@ -174,7 +175,7 @@ Q2:
                            (expr->string (parity-expr-odd e))
                            ";"
                           )]
-        [(ifzero-expr? e) (string-append
+        [(ifzero-expr? e) (string-append  ;>>>Q1
                           "if "
                           (expr->string (ifzero-expr-cond e))
                           " is"
@@ -184,7 +185,7 @@ Q2:
                           " else "
                           (expr->string (ifzero-expr-other e))
                           " @")]
-        [(let-expr? e) (string-append
+        [(let-expr? e) (string-append   ;>>>Q2
                        "say "
                        (expr->string (let-expr-id e))
                        " be "
@@ -192,7 +193,7 @@ Q2:
                        " in "
                        (expr->string (let-expr-in e))
                        " matey")]
-        [(char? (string-ref e 0)) e]
+        [(char? (string-ref e 0)) e] ;>>>Q2
         [else (error 'expr->string "unknown internal format?!: ~v" e)]
         ))
 
@@ -209,11 +210,11 @@ Q2:
          (if (even? (eval (parity-expr-cond e)))
              (eval (parity-expr-even e))
              (eval (parity-expr-odd e)))]
-        [(ifzero-expr? e) (if (equal? 0 (eval (ifzero-expr-cond e)))
+        [(ifzero-expr? e) (if (equal? 0 (eval (ifzero-expr-cond e)))  ;>>>Q1
                               (eval (ifzero-expr-zero e))
                               (eval (ifzero-expr-other e)))]
-        [(char? e) (error 'eval "unknown id?!: ~v" e)]
-        [(let-expr? e) (eval (substitute (let-expr-id e)
+        [(char? e) (error 'eval "unknown id?!: ~v" e)]        ;>>>Q2
+        [(let-expr? e) (eval (substitute (let-expr-id e)      ;>>>Q2
                                   (eval (let-expr-be e))
                                   (let-expr-in e)))]
         [else (error 'eval "unknown internal format?!: ~v" e)]))
@@ -238,7 +239,7 @@ Q2:
 
 ; substitute : char, num, expr -> expr
 ;
-(define (substitute id num e)
+(define (substitute id num e)    ;>>>Q2
   (cond [(number? e) e]
         [(paren-expr? e) (make-paren-expr (substitute id num (paren-expr-e e)))]
         [(bin-expr? e) (make-bin-expr (substitute id num (bin-expr-left e))
@@ -250,7 +251,7 @@ Q2:
         [(ifzero-expr? e) (make-ifzero-expr (substitute id num (ifzero-expr-cond e))
                                             (substitute id num (ifzero-expr-zero e))
                                             (substitute id num (ifzero-expr-other e)))]
-        [(let-expr? e) (make-let-expr (let-expr-id e)
+        [(let-expr? e) (make-let-expr (substitute id num (let-expr-id e))
                                       (substitute id num (let-expr-be e))
                                       (substitute id num (let-expr-in e)))]
         [(char? (string-ref e 0)) (if (string=? e id) num e) ]
