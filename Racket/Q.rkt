@@ -197,28 +197,6 @@ Q2:
         [else (error 'expr->string "unknown internal format?!: ~v" e)]
         ))
 
-
-
-; eval : (-> expr val)
-; Evaluate the given expr.
-;
-(define (eval e)
-  (cond [(number? e) e]
-        [(paren-expr? e) (eval (paren-expr-e e))]
-        [(bin-expr? e) (eval-bin-expr e)] ; defer to a helper
-        [(parity-expr? e)
-         (if (even? (eval (parity-expr-cond e)))
-             (eval (parity-expr-even e))
-             (eval (parity-expr-odd e)))]
-        [(ifzero-expr? e) (if (equal? 0 (eval (ifzero-expr-cond e)))  ;>>>Q1
-                              (eval (ifzero-expr-zero e))
-                              (eval (ifzero-expr-other e)))]
-        [(char? e) (error 'eval "unknown id?!: ~v" e)]        ;>>>Q2
-        [(let-expr? e) (eval (substitute (let-expr-id e)      ;>>>Q2
-                                  (eval (let-expr-be e))
-                                  (let-expr-in e)))]
-        [else (error 'eval "unknown internal format?!: ~v" e)]))
-
 ; eval-bin-expr : (-> bin-expr val)
 ;
 (define (eval-bin-expr e)
@@ -236,6 +214,38 @@ Q2:
                        (bin-expr-op e)
                        (expr->string e))])))
 
+; eval : (-> expr val)
+; Evaluate the given expr.
+;
+(define (eval e)
+  (cond [(number? e) e]
+        [(paren-expr? e) (eval (paren-expr-e e))]
+        [(bin-expr? e) (eval-bin-expr e)] ; defer to a helper
+        [(parity-expr? e)
+         (if (even? (eval (parity-expr-cond e)))
+             (eval (parity-expr-even e))
+             (eval (parity-expr-odd e)))]
+        [(ifzero-expr? e) (if (equal? 0 (eval (ifzero-expr-cond e)))  ;>>>Q1
+                              (eval (ifzero-expr-zero e))
+                              (eval (ifzero-expr-other e)))]
+        [(let-expr? e) (eval (substitute (let-expr-id e)      ;>>>Q2
+                                         (eval (let-expr-be e))
+                                         (let-expr-in e)))]
+        [(char? e) (error 'eval "unknown id?!: ~v" e)]        ;>>>Q2
+        [else (error 'eval "unknown internal format?!: ~v" e)]))
+
+;say y
+;   be say z
+;      be 4
+;      in [[say y
+;           be 99
+;           in z matey]] matey
+;   in [[say z
+;        be 5
+;        in ([[say z
+;              be 10
+;              in y matey]] add (y add z)) matey]] matey
+
 
 ; substitute : char, num, expr -> expr
 ;
@@ -251,14 +261,13 @@ Q2:
         [(ifzero-expr? e) (make-ifzero-expr (substitute id num (ifzero-expr-cond e))
                                             (substitute id num (ifzero-expr-zero e))
                                             (substitute id num (ifzero-expr-other e)))]
-        [(let-expr? e) (make-let-expr (substitute id num (let-expr-id e))
+        [(let-expr? e) (make-let-expr (let-expr-id e)
                                       (substitute id num (let-expr-be e))
-                                      (substitute id num (let-expr-in e)))]
-        [(char? (string-ref e 0)) (if (string=? e id) num e) ]
+                                      (if (and (string? (let-expr-id e)) (string=? id (let-expr-id e)))
+                                          (let-expr-in e)
+                                          (substitute id num (let-expr-in e))))]
+        [(string? e) (if (string=? e id) num e) ]
         [ else (error 'substitute "unknown internal format?!: ~v" e)]))
-
-
-
 
 
 

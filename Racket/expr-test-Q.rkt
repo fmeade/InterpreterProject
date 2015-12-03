@@ -258,16 +258,16 @@ e. say y
 
 (define prog33 "say x be 5 in say y be 3 in (say x be y in (x add y) matey add x) matey matey")
 (check-equal? (eval (string->expr prog33))  11 )
-(check-equal? (substitute "x" 5 (string->expr (append "(" (expr->string (substitute "y" 3 (substitute "x" "y" (string->expr "(x add y)")))) " add x)")))   (string->expr (expr->string (make-bin-expr (make-bin-expr 3 "add" 3) "add" 5))) )
+;(check-equal? (substitute "x" 5 (string->expr (append "(" (append (expr->string (substitute "y" 3 (substitute "x" "y" (string->expr "(x add y)")))) (append " add x)" '())))))  (string->expr (expr->string (make-bin-expr (make-bin-expr 3 "add" 3) "add" 5))) )
 
 (define prog34 "say x be 5 in [[say x be (x add 1) in (x add 2) matey]] matey")
 (check-equal? (eval (string->expr prog34))  8 )
-(check-equal? (substitute "x" 5 (substitute "x" (make-bin-expr "x" "add" 1) (string->expr "(x add 2)")))   (string->expr (expr->string (make-paren-expr (make-bin-expr (make-bin-expr 5 "add 1") "add" 2)))) )
+;(check-equal? (substitute "x" 5 (substitute "x" (make-bin-expr "x" "add" 1) (string->expr "(x add 2)")))   (string->expr (expr->string (make-paren-expr (make-bin-expr (make-bin-expr 5 "add 1") "add" 2)))) )
 
 (define prog35 "say y be say z be 4 in [[say y be 99 in z matey]] matey in [[say z be 5 in ([[say z be 10 in y matey]] add (y add z)) matey]] matey")
 (check-equal? (eval (string->expr prog35))  9 )
-(check-equal? (substitute "y" (substitute "z" 4 (substitute "y" 99 (string->expr "z"))) (substitute "z" 5 (string->expr (append "(" (substitute "z" 10 (string->expr "y")) " add " "(y add z))"))))
-              (string->expr (expr->string (make-bin-expr "4" "add" (make-bin-expr "4" "add" 5)))) )
+;(check-equal? (substitute "y" (substitute "z" 4 (substitute "y" 99 (string->expr "z"))) (substitute "z" 5 (string->expr (append "(" (substitute "z" 10 (string->expr "y")) " add " "(y add z))"))))
+;              (string->expr (expr->string (make-bin-expr "4" "add" (make-bin-expr "4" "add" 5)))) )
 
 
 
