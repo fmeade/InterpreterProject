@@ -18,10 +18,10 @@
 (require test-engine/scheme-tests)
 
 
-;;;;;;;;;;; language Q2 ;;;;;;;;;;;;;;
+;;;;;;;;;;; language Q3 ;;;;;;;;;;;;;;
 
 #|
-Q2:
+Q3:
   Expr       ::= Num | ParenExpr | BinExpr | ParityExpr | IfZeroExpr | Id | LetExpr
   ParenExpr  ::= [[ Expr ]]
   BinExpr    ::= ( Expr BinOp Expr )
@@ -37,9 +37,9 @@ Q2:
 ; - (make-paren-expr  [Expr])
 ; - (make-bin-expr    [Expr] [Bin-op] [Expr])
 ; - (make-parity-expr [Expr] [Expr] [Expr])
-; - (make-ifzero-expr [Expr] [Expr] [Expr])
-; - a char (Id)
-; - (make-let-expr [char] [Expr] [Expr])
+; - (make-ifzero-expr [Expr] [Expr] [Expr]) ;>>>Q1
+; - a string                                ;>>>Q2
+; - (make-let-expr [char] [Expr] [Expr])    ;>>>Q2
 ;
 ; A Bin-op is a string in the list BIN_OP_TOKENS:
 ;
@@ -54,7 +54,7 @@ Q2:
 (define-struct paren-expr (e) #:transparent)
 (define-struct parity-expr (cond even odd) #:transparent)
 (define-struct ifzero-expr (cond zero other) #:transparent) ;>>>Q1
-(define-struct let-expr (id be in) #:transparent) ;>>>Q2
+(define-struct let-expr (id be in) #:transparent)           ;>>>Q2
 ;
 ; The keyword 'transparent' makes structs with 'public' fields;
 ; in particular check-expect can inspect these structs.
@@ -115,7 +115,7 @@ Q2:
            (when (not (bin-op? operator))
              (error 'parse! "Expected one of ~v, got ~v." BIN_OP_TOKENS operator))
            (make-bin-expr subexpr1 operator subexpr2))]
-        [(string=? (peek scnr) "if") ;>>>Q1
+        [(string=? (peek scnr) "if")   ;>>>Q1
          (let* {[open-if (pop! scnr)]
                 [subexpr1 (parse! scnr)]
                 [the-is (pop! scnr)]
@@ -137,6 +137,8 @@ Q2:
                 } (make-let-expr subid subexpr1 subexpr2))]
         [(char? (string-ref (peek scnr) 0)) (pop! scnr)] ;>>>Q2
         [else (error 'parse! "Unrecognized expr: ~v." (peek scnr))]))
+
+
 
 ; string->expr (-> string expr)
 ; Convert the given string representing exactly *one* single Expr
@@ -197,6 +199,8 @@ Q2:
         [else (error 'expr->string "unknown internal format?!: ~v" e)]
         ))
 
+
+
 ; eval-bin-expr : (-> bin-expr val)
 ;
 (define (eval-bin-expr e)
@@ -213,6 +217,8 @@ Q2:
                        "Syntax error: unknown binary operator '~a' in ~a."
                        (bin-expr-op e)
                        (expr->string e))])))
+
+
 
 ; eval : (-> expr val)
 ; Evaluate the given expr.
@@ -233,6 +239,8 @@ Q2:
                                          (let-expr-in e)))]
         [(char? e) (error 'eval "unknown id?!: ~v" e)]        ;>>>Q2
         [else (error 'eval "unknown internal format?!: ~v" e)]))
+
+
 
 ;say y
 ;   be say z
