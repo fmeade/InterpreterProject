@@ -261,7 +261,7 @@ e. say y
 (define prog33 "say x be 5 in say y be 3 in (say x be y in (x add y) matey add x) matey matey")
 (check-equal? (eval (string->expr prog33))  11 )
 (check-equal? (substitute "x" 5 (string->expr (append "(" (append (expr->string (substitute "y" 3 (substitute "x" "y" (string->expr "(x add y)")))) (append " add x)" '())))))
-              (string->expr (expr->string (make-bin-expr (make-bin-expr 3 "add" 3) "add" 5))) )
+              (make-bin-expr (make-bin-expr 3 "add" 3) "add" 5) )
 
 (define prog34 "say x be 5 in [[say x be (x add 1) in (x add 2) matey]] matey")
 (check-equal? (eval (string->expr prog34))  8 )
