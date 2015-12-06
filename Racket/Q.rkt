@@ -237,10 +237,10 @@ Q3:
         [(let-expr? e) (eval (substitute (let-expr-id e)      ;>>>Q2
                                          (eval (let-expr-be e))
                                          (let-expr-in e)))]
-        [(char? e) (error 'eval "unknown id?!: ~v" e)]        ;>>>Q2
+        [(string? e) (error 'eval "unknown id?!: ~v" e)]        ;>>>Q2
         [else (error 'eval "unknown internal format?!: ~v" e)]))
 
-
+;say x be 5 in [[say x be (x add 1) in (x add 2) matey]] matey
 
 ;say y
 ;   be say z
@@ -255,7 +255,7 @@ Q3:
 ;              in y matey]] add (y add z)) matey]] matey
 
 
-; substitute : char, num, expr -> expr
+; substitute : string, num, expr -> expr
 ;
 (define (substitute id num e)    ;>>>Q2
   (cond [(number? e) e]
@@ -264,17 +264,17 @@ Q3:
                                       (bin-expr-op e)
                                       (substitute id num (bin-expr-right e)))]
         [(parity-expr? e) (make-parity-expr (substitute id num (parity-expr-cond e))
-                                           (substitute id num (parity-expr-even e))
-                                           (substitute id num (parity-expr-odd e)))]
+                                            (substitute id num (parity-expr-even e))
+                                            (substitute id num (parity-expr-odd e)))]
         [(ifzero-expr? e) (make-ifzero-expr (substitute id num (ifzero-expr-cond e))
                                             (substitute id num (ifzero-expr-zero e))
                                             (substitute id num (ifzero-expr-other e)))]
-        [(let-expr? e) (make-let-expr (let-expr-id e)
+        [(let-expr? e) (make-let-expr (substitute id num (let-expr-id e))
                                       (substitute id num (let-expr-be e))
-                                      (if (and (string? (let-expr-id e)) (string=? id (let-expr-id e)))
-                                          (let-expr-in e)
-                                          (substitute id num (let-expr-in e))))]
-        [(string? e) (if (string=? e id) num e) ]
+                                      (substitute (let-expr-id e)
+                                                  (let-expr-be e)
+                                                  (let-expr-in e)))]
+        [(string? e) (if (string=? e id) num e)]
         [ else (error 'substitute "unknown internal format?!: ~v" e)]))
 
 

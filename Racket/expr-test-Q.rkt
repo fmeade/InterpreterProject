@@ -196,7 +196,7 @@ Q2:
 (check-equal? (substitute "x" 9 (string->expr "x"))   (string->expr "9") )
 (check-equal? (substitute "z" 7 (string->expr "x"))   (string->expr "x") )
 (check-equal? (substitute "z" 7 (string->expr "(4 add z)"))  (string->expr (expr->string (make-bin-expr 4 "add" 7))) )
-(check-equal? (substitute "z" 7 (string->expr "say x be z in (x mul z) matey"))   (string->expr (expr->string (make-let-expr "x" 7 (make-bin-expr "x" "mul" 7)))) )
+(check-equal? (substitute "z" 7 (string->expr "say x be z in (x mul z) matey")) (string->expr (expr->string (make-let-expr "x" 7 (make-bin-expr "x" "mul" 7)))) )
 ; Give at least one more interesting tree, to test `substitute` on,
 ; with parse-tree of height of 2 or more.
 ; You do *not* need to do `substitute` on a parse tree containing a `say` inside of it ... yet.
