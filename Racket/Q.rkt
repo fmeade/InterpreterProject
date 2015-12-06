@@ -241,6 +241,7 @@ Q3:
         [else (error 'eval "unknown internal format?!: ~v" e)]))
 
 ;say x be 5 in [[say x be (x add 1) in (x add 2) matey]] matey
+;substitute "z" 7 (string->expr "say x be z in (x mul z) matey")
 
 ;say y
 ;   be say z
@@ -271,9 +272,7 @@ Q3:
                                             (substitute id num (ifzero-expr-other e)))]
         [(let-expr? e) (make-let-expr (substitute id num (let-expr-id e))
                                       (substitute id num (let-expr-be e))
-                                      (substitute (let-expr-id e)
-                                                  (let-expr-be e)
-                                                  (let-expr-in e)))]
+                                      (substitute id num (let-expr-in e)))]
         [(string? e) (if (string=? e id) num e)]
         [ else (error 'substitute "unknown internal format?!: ~v" e)]))
 
