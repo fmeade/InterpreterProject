@@ -301,5 +301,19 @@ Q4:
 
 ;;;;;;;;;;;;;;;;;;; TEST CASES: Q4 ;;;;;;;;;;;;;;;;
 
+;; #6 Test Cases
+; (x) -> {17}
+; (x) -> {(x "mul" x)}
+; (x) -> {x!}
+; (x) -> {(make-adder x)}
 
 
+(check-equal? (expr->string (make-func-expr "x" (make-bin-expr "x" "add" 4))) "(x) -> {(x add 4)}")
+(check-equal? (expr->string (make-func-expr "x" (make-paren-expr "x"))) "(x) -> {[[x]]}")
+
+(check-equal? (string->expr "(x) -> {(x add 4)}") (make-func-expr "x" (make-paren-expr "x")))
+(check-equal? (string->expr "(x) -> {[[x]]}") (make-func-expr "x" (make-paren-expr "x")))
+
+
+(check-equal? (expr->string (make-func-apply-expr (make-paren-expr "4") (make-bin-expr "4" "add" 4))) "<4 @ (4 add 4)>")
+(check-equal? (expr->string (make-func-apply-expr 17 (make-paren-expr "4"))) "<17 @ [[4]]>")

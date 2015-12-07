@@ -42,6 +42,8 @@ Q4:
 ; - (make-ifzero-expr [Expr] [Expr] [Expr]) ;>>>Q1
 ; - a string                                ;>>>Q2
 ; - (make-let-expr [char] [Expr] [Expr])    ;>>>Q2
+; - (make-func-expr [string] [Expr])        ;>>>Q4
+; - (make-func-apply-expr [Expr] [Expr])  ;>>>Q4
 ;
 ; A Bin-op is a string in the list BIN_OP_TOKENS:
 ;
@@ -57,6 +59,8 @@ Q4:
 (define-struct parity-expr (cond even odd) #:transparent)
 (define-struct ifzero-expr (cond zero other) #:transparent) ;>>>Q1
 (define-struct let-expr (id be in) #:transparent)           ;>>>Q2
+(define-struct func-expr (id e) #:transparent) ;>>>Q4
+(define-struct func-apply-expr (first last) #:transparent) >>>Q4
 ;
 ; The keyword 'transparent' makes structs with 'public' fields;
 ; in particular check-expect can inspect these structs.
@@ -106,14 +110,13 @@ Q4:
                 }
            (make-paren-expr the-inside-expr))]
         [(string=? (peek scnr) "(")
-         (let* {[open-paren (pop! scnr)]  ; Pop off the "(" we just peeked at.  Ignore it.
-                [subexpr1 (parse! scnr)]  ; Read an *entire* expr, even if deeply nested!
+         (let* {[open-paren (pop! scnr)]
+                [subexpr1 (parse! scnr)]
                 [operator (pop! scnr)]
                 [subexpr2 (parse! scnr)]
-                [closing-paren (pop! scnr)]
-                }
-           (when (not (string=? closing-paren ")"))
-             (error 'parse! "Expected ')', got: ~v." closing-paren))
+                [close-paren (pop! scnr)]}
+           (when (not (string=? close-paren ")"))
+             (error 'parse! "Expected ')', got: ~v." close-paren))
            (when (not (bin-op? operator))
              (error 'parse! "Expected one of ~v, got ~v." BIN_OP_TOKENS operator))
            (make-bin-expr subexpr1 operator subexpr2))]
@@ -197,6 +200,20 @@ Q4:
                        " in "
                        (expr->string (let-expr-in e))
                        " matey")]
+        [(func-expr? e) (string-append      ;>>>Q4
+                         "("
+                         (expr->string (func-expr-id e))
+                         ")"
+                         " -> "
+                         "{"
+                         (expr->string (func-expr-e e))
+                         "}")]
+        [(func-apply-expr? e) (string-append   ;>>>Q4
+                               "<"
+                               (expr->string (func-apply-expr-first e))
+                               " @ "
+                               (expr->string (func-apply-expr-last e))
+                               ">")]
         [(char? (string-ref e 0)) e] ;>>>Q2
         [else (error 'expr->string "unknown internal format?!: ~v" e)]
         ))

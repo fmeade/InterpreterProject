@@ -1,0 +1,100 @@
+%% HW 8
+%% Forrest Meade (fmeade)
+%% ITEC 380
+%% December 7, 2015
+
+% Data:
+
+male(bob).
+male(charlie).
+male(ethan).
+male(kris).
+female(amy).
+female(grace).
+female(alice).
+female(dee).
+
+% (A) Find dance partners -- one man, one woman:
+
+partner(A,B) :- male(A), female(B).
+
+
+%% Try: 
+% can alice & bob be partners? partner(alice, bob). no
+% can bob & alice be partners? partner(bob, alice). yes
+% who can be partners with bob? partner(X, bob). no 
+% who can bob be partners with? partner(bob, X). amy,grace,alice,dee
+% who can be partners? partner(X, Y). 
+
+
+
+% (B) Find drinking partners -- both with a common preference:
+
+drinks(bob,soda).
+drinks(bob,pepsi).
+drinks(charlie,water).
+drinks(charlie,soda).
+drinks(charlie,pepsi).
+drinks(charlie,whiskey).
+drinks(charlie,gin).
+drinks(charlie,martini).
+drinks(ethan,_).
+drinks(ethan,water).
+drinks(alice,water).
+drinks(alice,gin).
+drinks(alice,martini).
+drinks(dee,water).
+drinks(grace,margarita).
+drinks(kris,soda).
+drinks(kris,martini).
+
+% Find every drink that charlie likes. drinks(charlie,X).
+
+% Find everybody who likes martinis. drinks(X,martini).
+
+% Write drinksWith -- shares a preference
+
+drinksWith( P1, P2, Dr ) :- drinks(P1,Dr), drinks(P2,Dr).
+drinksWith( P1, P2 ) :- drinks(P1,Dr), drinks(P2,Dr), P1 \= P2.
+
+% drinksWith(alice,charlie). yes
+% drinksWith(bob,alice). no
+% drinksWith(amy,kris,soda). no
+
+
+%%% Task: write `partyOf3` -- three people who are each drinking buddies with
+%%%   each other (but not necessarily one drink that *all* three like simultaneously).
+
+partyOf3(P1,P2,P3) :- drinks(P1,DrA), drinks(P2,DrA), P1 \= P2,
+                      drinks(P2,DrB), drinks(P3,DrB), P2 \= P3,
+                      drinks(P3,DrC), drinks(P3,DrC), P3 \= P1.
+
+partyOf3(P1,P2,P3) :- drinksWith(P1,P2), 
+                      drinksWith(P2,P3), 
+                      drinksWith(P1,P3).
+
+% partyOf3(alice,charlie,kris). yes
+% partyOf3(alice,ethan,kris). yes
+% partyOf3(amy,kris,alice). yes
+
+
+%%% Task: write 'chaperone' -- two people of opposite gender and share 
+%%%     a drink are chaperoned by another person with the same drink choice.
+chaperone(P1,P2,P3) :- (partner(P1,P2); partner(P2,P1)), 
+					   P1 \= P2, P1 \= P3, P2 \= P3,
+					   drinks(P1,Dr), drinks(P2,Dr), drinks(P3,Dr).
+
+
+% chaperone(alice,bob,X).
+% charerone(X, Y, dee). 
+
+
+%%% Task: write 'edb' -- extended drinking buddies
+%%% 
+edb(P1,P2) :- drinksWith(P1,A), drinksWith(A,B), drinksWith(B,P2).
+edb(P1,P2) :- drinksWith(P1,A), edb(A,P2).
+
+
+
+%%%%%%%
+
