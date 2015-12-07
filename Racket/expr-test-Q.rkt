@@ -256,6 +256,18 @@ e. say y
               (string->expr (expr->string (make-bin-expr 3 "add" 3))) )
 
 (define prog33 "say x be 5 in say y be 3 in (say x be y in (x add y) matey add x) matey matey")
+(check-equal? (string->expr prog33)
+              (make-let-expr "x"
+                             5
+                             (make-let-expr "y"
+                                            3
+                                            (make-bin-expr
+                                             (make-let-expr "x"
+                                                            "y" (make-bin-expr "x"
+                                                                               "add"
+                                                                               "y"))
+                                             "add"
+                                             "x"))))
 (check-equal? (eval (string->expr prog33))  11 )
 (check-equal? (substitute "x" 5 (substitute "y" 3 (make-bin-expr (substitute "x" "y" (string->expr "(x add y)")) "add" "x")))
               (string->expr (expr->string (make-bin-expr (make-bin-expr 3 "add" 3) "add" 5))) )
@@ -265,10 +277,29 @@ e. say y
 (check-equal? (substitute "x" 5 (make-paren-expr (substitute "x" (string->expr "(x add 1)") (string->expr "(x add 2)"))))
               (string->expr (expr->string (make-paren-expr (make-bin-expr (make-bin-expr 5 "add" 1) "add" 2)))) )
 
+
 (define prog35 "say y be say z be 4 in [[say y be 99 in z matey]] matey in [[say z be 5 in ([[say z be 10 in y matey]] add (y add z)) matey]] matey")
-(check-equal? (eval (string->expr prog35))  9 )
+(check-equal? (eval (string->expr prog35))  13 )
 (check-equal? (substitute "y" (substitute "z" 4 (make-paren-expr (substitute "y" 99 (string->expr "z")))) (make-paren-expr (substitute "z" 5 (make-bin-expr (make-paren-expr (substitute "z" 10 (string->expr "y"))) "add" (string->expr "(y add z)")))) )
-              (string->expr (expr->string (make-paren-expr (make-bin-expr "4" "add" (make-bin-expr "4" "add" 5))))) )
+              (make-paren-expr (make-bin-expr (make-paren-expr (make-paren-expr 4)) "add" (make-bin-expr (make-paren-expr 4) "add" 5))) )
+
+
+
+
+#|
+Q4:
+ Expr           ::= Num | ParenExpr | BinExpr | ParityExpr | IfZeroExpr | Id | LetExpr | FuncExpr | FuncApplyExpr
+  ParenExpr     ::= [[ Expr ]]
+  BinExpr       ::= ( Expr BinOp Expr )
+  ParityExpr    ::= parity Expr even: Expr odd: Expr ;
+  IfZeroExpr    ::= if Expr is zero then Expr else Expr @
+  LetExpr       ::= say Id be Expr in Expr matey
+  FuncExpr      ::= (Id) -> {Expr}
+  FuncApplyExpr ::= <Expr @ Expr>
+  BinOp         ::= add | sub | mul | mod
+|#
+
+;;;;;;;;;;;;;;;;;;; TEST CASES: Q4 ;;;;;;;;;;;;;;;;
 
 
 

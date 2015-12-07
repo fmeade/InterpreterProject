@@ -21,14 +21,16 @@
 ;;;;;;;;;;; language Q3 ;;;;;;;;;;;;;;
 
 #|
-Q3:
-  Expr       ::= Num | ParenExpr | BinExpr | ParityExpr | IfZeroExpr | Id | LetExpr
-  ParenExpr  ::= [[ Expr ]]
-  BinExpr    ::= ( Expr BinOp Expr )
-  ParityExpr ::= parity Expr even: Expr odd: Expr ;
-  IfZeroExpr ::= if Expr is zero then Expr else Expr @
-  LetExpr ::= say Id be Expr in Expr matey
-  BinOp      ::= add | sub | mul | mod
+Q4:
+ Expr           ::= Num | ParenExpr | BinExpr | ParityExpr | IfZeroExpr | Id | LetExpr | FuncExpr | FuncApplyExpr
+  ParenExpr     ::= [[ Expr ]]
+  BinExpr       ::= ( Expr BinOp Expr )
+  ParityExpr    ::= parity Expr even: Expr odd: Expr ;
+  IfZeroExpr    ::= if Expr is zero then Expr else Expr @
+  LetExpr       ::= say Id be Expr in Expr matey
+  FuncExpr      ::= (Id) -> {Expr}
+  FuncApplyExpr ::= <Expr @ Expr>
+  BinOp         ::= add | sub | mul | mod
 |#
 
 
@@ -243,17 +245,6 @@ Q3:
 ;say x be 5 in [[say x be (x add 1) in (x add 2) matey]] matey
 ;substitute "z" 7 (string->expr "say x be z in (x mul z) matey")
 
-;say y
-;   be say z
-;      be 4
-;      in [[say y
-;           be 99
-;           in z matey]] matey
-;   in [[say z
-;        be 5
-;        in ([[say z
-;              be 10
-;              in y matey]] add (y add z)) matey]] matey
 
 
 ; substitute : string, num, expr -> expr
@@ -270,9 +261,11 @@ Q3:
         [(ifzero-expr? e) (make-ifzero-expr (substitute id num (ifzero-expr-cond e))
                                             (substitute id num (ifzero-expr-zero e))
                                             (substitute id num (ifzero-expr-other e)))]
-        [(let-expr? e) (make-let-expr (substitute id num (let-expr-id e))
+        [(let-expr? e) (make-let-expr (let-expr-id e)
                                       (substitute id num (let-expr-be e))
-                                      (substitute id num (let-expr-in e)))]
+                                      (if (string=? id (let-expr-id e)) ;>>>Q3
+                                          (substitute (let-expr-id e) (substitute id num (let-expr-be e)) (let-expr-in e))
+                                          (substitute id num (let-expr-in e))))]
         [(string? e) (if (string=? e id) num e)]
         [ else (error 'substitute "unknown internal format?!: ~v" e)]))
 
