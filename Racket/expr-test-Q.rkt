@@ -104,11 +104,12 @@
 
 
 
+
+
 ;; Forrest Meade (fmeade)
 ;; HW07 Test Cases Q1 & Q2
 ;; ITEC 380
 ;; November 20, 2015
-
 
 #|
 Q1:
@@ -121,7 +122,6 @@ Q1:
 |#
 
 ;;;;;;;;;;;;;;;;;;; TEST CASES: Q1 ;;;;;;;;;;;;;;;;
-
 
 (require rackunit)
 
@@ -143,8 +143,6 @@ Q1:
 
 
 
-
-
 #|
 Q2:
  Expr       ::= Num | ParenExpr | BinExpr | ParityExpr | IfZeroExpr | Id | LetExpr
@@ -157,8 +155,6 @@ Q2:
 |#
 
 ;;;;;;;;;;;;;;;;;;; TEST CASES: Q2 ;;;;;;;;;;;;;;;;
-
-
 
 (define prog21 "say x be 5 in ( 4 mul x ) matey") 
 (check-equal? (string->expr prog21) (make-let-expr "x" 5 (make-bin-expr 4 "mul" "x")))
@@ -185,9 +181,6 @@ Q2:
 (check-equal? (eval (string->expr prog23)) 0 )
 
 
-
-
-
 ; The last paragraph of #2 on hw07 mentions that you'll have to do substitution in a tree.
 ; Although `substitute` returns a *tree* (an Expr), 
 ; we can use `parse` (a.k.a. string->expr) (already tested!) to help us generate our expected-results.
@@ -208,6 +201,10 @@ Q2:
 
 
 
+;; Forrest Meade (fmeade)
+;; HW08 Test Cases Q3 & Q4
+;; ITEC 380
+;; December 7, 2015
 
 #|
 Q3:
@@ -284,8 +281,6 @@ e. say y
               (make-paren-expr (make-bin-expr (make-paren-expr (make-paren-expr 4)) "add" (make-bin-expr (make-paren-expr 4) "add" 5))) )
 
 
-
-
 #|
 Q4:
  Expr           ::= Num | ParenExpr | BinExpr | ParityExpr | IfZeroExpr | Id | LetExpr | FuncExpr | FuncApplyExpr
@@ -317,3 +312,26 @@ Q4:
 
 (check-equal? (expr->string (make-func-apply-expr (make-paren-expr "4") (make-bin-expr "4" "add" 4))) "<4 @ (4 add 4)>")
 (check-equal? (expr->string (make-func-apply-expr 17 (make-paren-expr "4"))) "<17 @ [[4]]>")
+
+
+
+
+;; Forrest Meade (fmeade)
+;; HW09 Test Cases Q5
+;; ITEC 380
+;; December 11, 2015
+
+#|
+Q5:
+ Expr           ::= Num | ParenExpr | BinExpr | ParityExpr | IfZeroExpr | Id | LetExpr | FuncExpr | FuncApplyExpr
+  ParenExpr     ::= [[ Expr ]]
+  BinExpr       ::= ( Expr BinOp Expr )
+  ParityExpr    ::= parity Expr even: Expr odd: Expr ;
+  IfZeroExpr    ::= if Expr is zero then Expr else Expr @
+  LetExpr       ::= say Id be Expr in Expr matey
+  FuncExpr      ::= (Id) -> {Expr}
+  FuncApplyExpr ::= <Expr @ Expr>
+  BinOp         ::= add | sub | mul | mod
+|#
+
+;;;;;;;;;;;;;;;;;;; TEST CASES: Q5 ;;;;;;;;;;;;;;;;

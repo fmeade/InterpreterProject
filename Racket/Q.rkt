@@ -60,7 +60,7 @@ Q4:
 (define-struct ifzero-expr (cond zero other) #:transparent) ;>>>Q1
 (define-struct let-expr (id be in) #:transparent)           ;>>>Q2
 (define-struct func-expr (id e) #:transparent) ;>>>Q4
-(define-struct func-apply-expr (first last) #:transparent) >>>Q4
+(define-struct func-apply-expr (first last) #:transparent) ;>>>Q4
 ;
 ; The keyword 'transparent' makes structs with 'public' fields;
 ; in particular check-expect can inspect these structs.
