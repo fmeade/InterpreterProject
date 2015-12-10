@@ -18,7 +18,7 @@
 (require test-engine/scheme-tests)
 
 
-;;;;;;;;;;; language Q3 ;;;;;;;;;;;;;;
+;;;;;;;;;;; language Q4 ;;;;;;;;;;;;;;
 
 #|
 Q4:
@@ -40,10 +40,10 @@ Q4:
 ; - (make-bin-expr    [Expr] [Bin-op] [Expr])
 ; - (make-parity-expr [Expr] [Expr] [Expr])
 ; - (make-ifzero-expr [Expr] [Expr] [Expr]) ;>>>Q1
-; - a string                                ;>>>Q2
+; - a String                                ;>>>Q2
 ; - (make-let-expr [char] [Expr] [Expr])    ;>>>Q2
-; - (make-func-expr [string] [Expr])        ;>>>Q4
-; - (make-func-apply-expr [Expr] [Expr])  ;>>>Q4
+; - (make-func-expr [String] [Expr])        ;>>>Q4
+; - (make-func-apply-expr [Expr] [Expr])    ;>>>Q4
 ;
 ; A Bin-op is a string in the list BIN_OP_TOKENS:
 ;
@@ -59,8 +59,8 @@ Q4:
 (define-struct parity-expr (cond even odd) #:transparent)
 (define-struct ifzero-expr (cond zero other) #:transparent) ;>>>Q1
 (define-struct let-expr (id be in) #:transparent)           ;>>>Q2
-(define-struct func-expr (id e) #:transparent) ;>>>Q4
-(define-struct func-apply-expr (first last) #:transparent) ;>>>Q4
+(define-struct func-expr (param e) #:transparent)        ;>>>Q4
+(define-struct func-apply-expr (func arg) #:transparent) ;>>>Q4
 ;
 ; The keyword 'transparent' makes structs with 'public' fields;
 ; in particular check-expect can inspect these structs.
@@ -111,15 +111,25 @@ Q4:
            (make-paren-expr the-inside-expr))]
         [(string=? (peek scnr) "(")
          (let* {[open-paren (pop! scnr)]
-                [subexpr1 (parse! scnr)]
-                [operator (pop! scnr)]
-                [subexpr2 (parse! scnr)]
-                [close-paren (pop! scnr)]}
-           (when (not (string=? close-paren ")"))
-             (error 'parse! "Expected ')', got: ~v." close-paren))
-           (when (not (bin-op? operator))
-             (error 'parse! "Expected one of ~v, got ~v." BIN_OP_TOKENS operator))
-           (make-bin-expr subexpr1 operator subexpr2))]
+                [id-or-left (parse! scnr)] ;>>>Q4 
+                [close-or-op (pop! scnr)]  ;>>>Q4 
+                }
+            (if (string=? ")" close-or-op) ;>>>Q4
+                (let* {  ; func-expr   ;>>>Q4
+                       [the-dash (pop! scnr)]
+                       [the-arrow (pop! scnr)]
+                       [open-bracket (pop! scnr)]
+                       [body (parse! scnr)]
+                       [close-bracket (pop! scnr)]
+                       }
+                  (make-func-expr id-or-left body))
+                (let* { ; bin-expr
+                       [subexpr2 (parse! scnr)]
+                       [close-paren (pop! scnr)]
+                       }
+                   (when (not (bin-op? close-or-op))
+                         (error 'parse! "Expected one of ~v, got ~v." BIN_OP_TOKENS close-or-op))
+                   (make-bin-expr id-or-left close-or-op subexpr2))))]
         [(string=? (peek scnr) "if")   ;>>>Q1
          (let* {[open-if (pop! scnr)]
                 [subexpr1 (parse! scnr)]
@@ -202,7 +212,7 @@ Q4:
                        " matey")]
         [(func-expr? e) (string-append      ;>>>Q4
                          "("
-                         (expr->string (func-expr-id e))
+                         (expr->string (func-expr-param e))
                          ")"
                          " -> "
                          "{"
@@ -210,9 +220,9 @@ Q4:
                          "}")]
         [(func-apply-expr? e) (string-append   ;>>>Q4
                                "<"
-                               (expr->string (func-apply-expr-first e))
+                               (expr->string (func-apply-expr-func e))
                                " @ "
-                               (expr->string (func-apply-expr-last e))
+                               (expr->string (func-apply-expr-arg e))
                                ">")]
         [(char? (string-ref e 0)) e] ;>>>Q2
         [else (error 'expr->string "unknown internal format?!: ~v" e)]
@@ -256,12 +266,12 @@ Q4:
         [(let-expr? e) (eval (substitute (let-expr-id e)      ;>>>Q2
                                          (eval (let-expr-be e))
                                          (let-expr-in e)))]
+        [(func-expr? e) e] ;>>>Q4
+        [(func-apply-expr? e) (eval (substitute (func-expr-param (func-apply-expr-func e))
+                                                (eval (func-apply-expr-arg e))
+                                                (func-expr-e (func-apply-expr-func e))))]
         [(string? e) (error 'eval "unknown id?!: ~v" e)]        ;>>>Q2
         [else (error 'eval "unknown internal format?!: ~v" e)]))
-
-;say x be 5 in [[say x be (x add 1) in (x add 2) matey]] matey
-;substitute "z" 7 (string->expr "say x be z in (x mul z) matey")
-
 
 
 ; substitute : string, num, expr -> expr
@@ -283,6 +293,12 @@ Q4:
                                       (if (string=? id (let-expr-id e)) ;>>>Q3
                                           (substitute (let-expr-id e) (substitute id num (let-expr-be e)) (let-expr-in e))
                                           (substitute id num (let-expr-in e))))]
+        [(func-expr? e) (make-func-expr (func-expr-param e)                    ;>>>Q4:
+                                        (if (string=? id (func-expr-param e))
+                                            (func-expr-e e)
+                                            (substitute id num (func-expr-e e))))]
+        [(func-apply-expr? e) (make-func-apply-expr (substitute id num (func-apply-expr-func e))
+                                                    (substitute id num (func-apply-expr-arg e)))]
         [(string? e) (if (string=? e id) num e)]
         [ else (error 'substitute "unknown internal format?!: ~v" e)]))
 

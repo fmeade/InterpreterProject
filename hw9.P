@@ -1,0 +1,71 @@
+% HW9
+% ITEC 380
+% Forrest Meade
+% December 11, 2015
+% http://radford.edu/~itec380/2015fall-ibarland/Homeworks/hw09.html
+
+
+% (A) last(List, Item), 
+%   which succeeds exactly when Item is the last item in List. This rule should 
+%      fail if List is empty, of course. (This happens to be the book's Chpt.16, 
+%      programming exercise #6.)
+last([Last], Last).
+last([_ | Rest], Last) :- last(Rest, Last).
+
+
+
+% (B) nextToLast(List, Item), 
+%   which succeeds exactly when Item is the next-to-last item in List. (This rule 
+%      should fail if List has fewer than two items, of course.)
+nextToLast([NextToLast | Last], NextToLast) :- Last = [_ | []].
+nextToLast([_ | Rest], NextToLast) :- nextToLast(Rest, NextToLast).
+
+
+
+% (C) lastTwoReversed(List, ListOf2),
+%   which succeeds exactly when ListOf2 contains the last and the second-to-last 
+%      item of List (in that order).
+lastTwoReversed(List, [A,B]) :- nextToLast(List, B), last(List, A).
+
+
+
+% (D) reverseLastTwo(List, NewList),
+%   succeeds exactly when NewList is like List except that the last two items have 
+%      been reversed. (This rule will fail if List has fewer than two items.)
+reverseLastTwo([A,B], [X,Y]) :- A = Y, B = X.
+reverseLastTwo([Head | Rest],[Head | NewRest]) :- reverseLastTwo(Rest,NewRest).
+
+
+
+
+%%% Test Cases:
+
+% last([1,2,3], 3).  Yes
+
+% last([1,2,3], 4).  No
+
+% last([1,2,3], Y).  Y=3
+
+% last([], Y).  No
+
+% last(Y, 3).  Y=[3].
+
+% nextToLast([1,2,3], 2).  Yes
+
+% nextToLast([1,2,3], 3).  No
+
+% nextToLast([1,2,3], Y).  Y=2
+
+% nextToLast([1], Y).  No
+
+% nextToLast(Y, 3).  Y=[3, _h114], Y=[_h116, 3, _h114].
+
+% lastTwoReversed([1,2,3], Y).  Y=[3,2]
+
+% lastTwoReversed([1], Y).  No
+
+% reverseLastTwo([1,2,3,4], Y).  Y=[1,2,4,3]
+
+% reverseLastTwo([1,2], Y).  Y=[2,1]
+
+% reverseLastTwo([1], Y).  No

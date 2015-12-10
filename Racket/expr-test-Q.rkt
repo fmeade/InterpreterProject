@@ -29,6 +29,13 @@
               "(4 add 3)")
 
 
+(check-equal? (expr->string "zz") "zz")
+(check-equal? (string->expr "zz") "zz")
+(check-exn    exn:fail? (λ() (eval "zz")))
+
+(check-equal? (string->expr "39") 39)
+(check-equal? (eval (string->expr e4)) 169)
+
 
 
 (define tests
@@ -45,28 +52,9 @@
     ["parity (parity parity 0 even: 1 odd: 2; even: 3 odd: 4 ; add -3) even:  1 odd: 2;" 
      2
      ,(make-parity-expr (make-bin-expr (make-parity-expr (make-parity-expr 0 1 2) 3 4) "add" -3) 1 2)]
-    
-    #| Further tests, for Q1:
-    ["(3.0 mod 4.0)" 3]
-    ["(( 5.0 add 6.0 ) mod 3.0)" 2]
-    ["(8.1 mod 3.0)" 2.1]
-    ["(8.0 mod 3.1)" 1.8]
-    ["(-8.1 mod 3.0)" 0.9]
-    ["(-8.0 mod 3.1)" 1.3]
-    ["(8.1 mod -3)" -0.9]
-    ["(8.0 mod -3.1)" -1.3]
-    ["(-8.1 mod -3.0)" -2.1]
-    ["(-8.0 mod -3.1)" -1.8]
-    ["(8.0  mod  2.0)" 0]
-    ["(-8.0  mod 2.0)" 0]
-    ["(8.0 mod  -2.0)" 0]
-    ["(-8.0 mod -2.0)" 0]
-    ["(8.0  mod  3.0)" 2]
-    ["(-8.0  mod 3.0)" 1]
-    ["(8.0 mod  -3.0)" -1]
-    ["(-8.0 mod -3.0)" -2]
-    |#
+
     })
+
 
 ; For info on backquote, see documentations and/or:
 ;   http://www.radford.edu/itec380/2014fall-ibarland/Lectures/backquote.html
@@ -306,12 +294,13 @@ Q4:
 (check-equal? (expr->string (make-func-expr "x" (make-bin-expr "x" "add" 4))) "(x) -> {(x add 4)}")
 (check-equal? (expr->string (make-func-expr "x" (make-paren-expr "x"))) "(x) -> {[[x]]}")
 
-(check-equal? (string->expr "(x) -> {(x add 4)}") (make-func-expr "x" (make-paren-expr "x")))
+(check-equal? (string->expr "(x) -> {(x add 4)}") (make-func-expr "x" (make-bin-expr "x" "add" 4)))
 (check-equal? (string->expr "(x) -> {[[x]]}") (make-func-expr "x" (make-paren-expr "x")))
 
 
-(check-equal? (expr->string (make-func-apply-expr (make-paren-expr "4") (make-bin-expr "4" "add" 4))) "<4 @ (4 add 4)>")
+(check-equal? (expr->string (make-func-apply-expr (make-paren-expr "4") (make-bin-expr "4" "add" 4))) "<[[4]] @ (4 add 4)>")
 (check-equal? (expr->string (make-func-apply-expr 17 (make-paren-expr "4"))) "<17 @ [[4]]>")
+
 
 
 
@@ -335,3 +324,6 @@ Q5:
 |#
 
 ;;;;;;;;;;;;;;;;;;; TEST CASES: Q5 ;;;;;;;;;;;;;;;;
+
+
+

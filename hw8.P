@@ -91,7 +91,7 @@ chaperone(P1,P2,P3) :- (partner(P1,P2); partner(P2,P1)),
 
 %%% Task: write 'edb' -- extended drinking buddies
 %%% 
-edb(P1,P2) :- drinksWith(P1,A), drinksWith(A,B), drinksWith(B,P2).
+edb(P1,P2) :- drinksWith(P1,P2).
 edb(P1,P2) :- drinksWith(P1,A), edb(A,P2).
 
 
